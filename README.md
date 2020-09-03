@@ -1,7 +1,10 @@
 EventBus
 ========
-EventBus is a publish/subscribe event bus optimized for Android.<br/>
+[EventBus](https://greenrobot.org/eventbus/) is a publish/subscribe event bus for Android and Java.<br/>
 <img src="EventBus-Publish-Subscribe.png" width="500" height="187"/>
+
+[![Build Status](https://travis-ci.org/greenrobot/EventBus.svg?branch=master)](https://travis-ci.org/greenrobot/EventBus)
+[![Follow greenrobot on Twitter](https://img.shields.io/twitter/follow/greenrobot_de.svg?style=flat-square&logo=twitter)](https://twitter.com/greenrobot_de)
 
 EventBus...
 
@@ -11,71 +14,116 @@ EventBus...
     * avoids complex and error-prone dependencies and life cycle issues
  * makes your code simpler
  * is fast
- * is tiny (~50k jar)
- * is proven in practice by apps with 100,000,000+ installs
+ * is tiny (~60k jar)
+ * is proven in practice by apps with 1,000,000,000+ installs
  * has advanced features like delivery threads, subscriber priorities, etc.
-
- [![Build Status](https://travis-ci.org/greenrobot/EventBus.svg?branch=master)](https://travis-ci.org/greenrobot/EventBus)
 
 EventBus in 3 steps
 -------------------
-1. Define events:<br/>
-<code>public class MessageEvent { /* Additional fields if needed */ }</code><br/><br/>
-2. Prepare subscribers<br/>
-Register your subscriber (in your onCreate or in a constructor):<br/>
-<code>eventBus.register(this);</code><br/><br/>
-Declare your subscribing method:<br/>
-<code>@Subscribe</code><br/>
-<code>public void onEvent(AnyEventType event) {/* Do something */};</code><br/><br/>
-3. Post events:<br/>
-<code>eventBus.post(event);</code>
+1. Define events:
 
-This [getting started guide](http://greenrobot.org/eventbus/documentation/how-to-get-started/) shows these 3 steps in more detail.
+    ```java  
+    public static class MessageEvent { /* Additional fields if needed */ }
+    ```
+
+2. Prepare subscribers:
+    Declare and annotate your subscribing method, optionally specify a [thread mode](https://greenrobot.org/eventbus/documentation/delivery-threads-threadmode/):  
+
+    ```java
+    @Subscribe(threadMode = ThreadMode.MAIN)  
+    public void onMessageEvent(MessageEvent event) {/* Do something */};
+    ```
+    Register and unregister your subscriber. For example on Android, activities and fragments should usually register according to their life cycle:
+
+   ```java
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+ 
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+    ```
+
+3. Post events:
+
+   ```java
+    EventBus.getDefault().post(new MessageEvent());
+    ```
+
+Read the full [getting started guide](https://greenrobot.org/eventbus/documentation/how-to-get-started/).
+
+There are also some [examples](https://github.com/greenrobot-team/greenrobot-examples).
+
+**Note:** we highly recommend the [EventBus annotation processor with its subscriber index](https://greenrobot.org/eventbus/documentation/subscriber-index/).
+This will avoid some reflection related problems seen in the wild.  
 
 Add EventBus to your project
 ----------------------------
-Please ensure that you are using the latest version by [checking here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.greenrobot%22%20AND%20a%3A%22eventbus%22)
+<a href="https://search.maven.org/search?q=g:org.greenrobot%20AND%20a:eventbus"><img src="https://img.shields.io/maven-central/v/org.greenrobot/eventbus.svg"></a>
 
-Gradle:
-```
-    compile 'org.greenrobot:eventbus:3.0.0'
+Available on <a href="https://search.maven.org/search?q=g:org.greenrobot%20AND%20a:eventbus">Maven Central</a>.
+
+Via Gradle:
+```gradle
+implementation 'org.greenrobot:eventbus:3.2.0'
 ```
 
-Maven:
-```
+Via Maven:
+```xml
 <dependency>
     <groupId>org.greenrobot</groupId>
     <artifactId>eventbus</artifactId>
-    <version>3.0.0</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 
-[Or download EventBus from Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22de.greenrobot%22%20AND%20a%3A%22eventbus%22)
+R8, ProGuard
+------------
+
+If your project uses R8 or ProGuard add the following rules:
+
+```bash
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @org.greenrobot.eventbus.Subscribe <methods>;
+}
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
+ 
+# And if you use AsyncExecutor:
+-keepclassmembers class * extends org.greenrobot.eventbus.util.ThrowableFailureEvent {
+    <init>(java.lang.Throwable);
+}
+```
 
 Homepage, Documentation, Links
 ------------------------------
-For more details on EventBus please check [EventBus' website](http://greenrobot.org/eventbus). Here are some direct links you may find useful:
+For more details please check the [EventBus website](https://greenrobot.org/eventbus). Here are some direct links you may find useful:
 
-[Features](http://greenrobot.org/eventbus/features/)
+[Features](https://greenrobot.org/eventbus/features/)
 
-[Documentation](http://greenrobot.org/eventbus/documentation/)
+[Documentation](https://greenrobot.org/eventbus/documentation/)
 
-[Changelog](http://greenrobot.org/eventbus/changelog/)
+[Changelog](https://greenrobot.org/eventbus/changelog/)
 
-[FAQ](http://greenrobot.org/eventbus/documentation/faq/)
+[FAQ](https://greenrobot.org/eventbus/documentation/faq/)
 
 How does EventBus compare to other solutions, like Otto from Square? Check this [comparison](COMPARISON.md).
 
 License
 -------
-Copyright (C) 2012-2016 Markus Junginger, greenrobot (http://greenrobot.org)
+Copyright (C) 2012-2020 Markus Junginger, greenrobot (https://greenrobot.org)
 
 EventBus binaries and source code can be used according to the [Apache License, Version 2.0](LICENSE).
 
-More Open Source by greenrobot
-==============================
-[__greenrobot-common__](https://github.com/greenrobot/greenrobot-common) is a set of utility classes and hash functions for Android & Java projects.
+Other projects by greenrobot
+============================
+[__ObjectBox__](https://objectbox.io/) ([GitHub](https://github.com/objectbox/objectbox-java)) is a new superfast object-oriented database.
+
+[__Essentials__](https://github.com/greenrobot/essentials) is a set of utility classes and hash functions for Android & Java projects.
 
 [__greenDAO__](https://github.com/greenrobot/greenDAO) is an ORM optimized for Android: it maps database tables to Java objects and uses code generation for optimal speed.
-
-[Follow us on Google+](https://plus.google.com/b/114381455741141514652/+GreenrobotDe/posts) or check our [homepage](http://greenrobot.org/) to stay up to date.
